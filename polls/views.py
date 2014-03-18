@@ -3,6 +3,7 @@
 
 from django.http import HttpResponseRedirect
 from django.views import generic
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, render
 from django.core.urlresolvers import reverse
 
@@ -11,11 +12,11 @@ from polls.models import Choice, Poll
 
 class IndexView(generic.ListView):
     template_name = 'polls/index.html'
-    context_object_name = 'lastest_poll_list'
+    context_object_name = 'latest_poll_list'
 
     def get_queryset(self):
         """Return the last five published polls."""
-        return Poll.objects.order_by('-pub_date')[:5]
+        return Poll.objects.filter(pub_date__lte=timezone.now()).order_by('-pub_date')[:5]
 
 
 class DetailView(generic.DetailView):
@@ -43,7 +44,7 @@ def vote(request, poll_id):
         selected_choice.votes += 1
         selected_choice.save()
 
-        # Essa funcao ajuda a evitar a necessidade de codificar a URL na funcao de ponto de vista.
+        # REVERSE - Essa funcao ajuda a evitar a necessidade de codificar a URL na funcao de ponto de vista.
         # Eh dado o nome da visao que queremos passar o controle e a parcela variavel do padrao de URL
         # que aponta para esse ponto de vista.
         # reverse('poll:results', args=(p.id,)) => '/polls/3/results/'
